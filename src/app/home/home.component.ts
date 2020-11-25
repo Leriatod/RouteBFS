@@ -30,8 +30,9 @@ export class HomeComponent implements OnInit {
     var edges = await this._cityService.getEdges();
     this.graph = new Graph(edges);
 
-    console.log(this.cities);
-    console.log(edges);
+    //console.log(this.cities);
+    //console.log(edges);
+
   }
 
 
@@ -42,4 +43,8 @@ export class HomeComponent implements OnInit {
     distinctUntilChanged(),
     map(term => this.cities.filter(city => new RegExp(term, 'mi').test(city.name)).slice(0, 10))
   )
+
+  find() {
+    this.graph.bestFirstSearch(this.startCity, this.endCity);
+  }
 }

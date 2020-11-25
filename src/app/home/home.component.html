@@ -26,15 +26,17 @@
                 </div>
             </div>
         </div>
+        <br>
+        <button class="btn btn-primary" (click)="find()">Знайти шлях</button>
     </div>
     <div class="col-md-6">
-        <h2>Список населених пунктів:</h2>
+        <h2>Список обласних центрів:</h2>
         <ul class="list-group">
             <li *ngFor="let c of cities; index as i" class="list-group-item d-flex justify-content-between align-items-center list-group-item-action">
                 {{ c.name }}
                 <span class="badge badge-primary badge-pill">{{ i + 1 }}</span>
             </li>
-          </ul>
+        </ul>
     </div>
 </div>
 
