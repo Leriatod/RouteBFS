@@ -1,65 +1,57 @@
 import { City } from './city';
 import { Edge } from './edge';
+import { Node } from './node'
+
 import * as _ from 'underscore';
+import { Path } from './path';
 
-
-interface Node {
-    city: City,
-    parent: Node,
-    distance: number
-}
 
 export class Graph {
     constructor(private edges: Edge[]) {
     }
 
-    bestFirstSearch(from: City, to: City) {    
-        var cityPriorityQueue: Node[] = [];
-        cityPriorityQueue.push({ city: from, parent: null, distance: 0 });
+    bestFirstSearch(from: City, to: City): Path { 
+        var nodesOrderedByDistance = [ new Node(from, null, 0) ];   
+        var isCityVisitedById = new Map<number, boolean>();
 
-        var visited = {};
-        visited[from.id] = true;
+        while (nodesOrderedByDistance.length !== 0) {
+            var node = nodesOrderedByDistance.shift();
 
-        while (cityPriorityQueue.length !== 0) {
-            var node = cityPriorityQueue.shift();
-            
-            if (node.city.id === to.id) {
-                console.log(node);
-                break;
-            }
+            isCityVisitedById.set(node.city.id, true);
 
-            var neightborsList = this.getNeightborsFor(node);     
-            neightborsList.forEach(neightbor => {
-                if (!visited[neightbor.city.id]) {
-                    visited[neightbor.city.id] = true;
-                    cityPriorityQueue.push(neightbor);
-                }
-            });
+            if (node.city.id === to.id) return node.cityPathFromRootToThis;
 
-            cityPriorityQueue = _.sortBy(cityPriorityQueue, c => c.distance);
-        }
+            var nonVisitedNeightbors = this.getNonVisitedNeightborsFor(node, isCityVisitedById);
+            nodesOrderedByDistance.push(... nonVisitedNeightbors);
+ 
+            nodesOrderedByDistance = _.sortBy(nodesOrderedByDistance, c => c.distance);
+        }       
+        return null;
     }
 
-    private getNeightborsFor(node: Node): Node[] {
-        var neightborsList: Node[] = [];
+    private getNonVisitedNeightborsFor(node: Node, isCityVisitedById: Map<number, boolean>): Node[] {
+        var nonVisitedNeightbors: Node[] = [];
 
-        this.edges.forEach(edge => {
+        this.edges.forEach(edge => { 
             var city1 = edge.from;
             var city2 = edge.to;
-            
-            var neightbor: Node = { city: null, parent: node, distance: edge.distance };
 
-            if (city1.id === node.city.id) {
-                neightbor.city = city2;
-                neightborsList.push(neightbor);
-            } else if (city2.id === node.city.id) {
-                neightbor.city = city1;
-                neightborsList.push(neightbor);
-            }
+            var isSecondCityNeightbor = city1.id === node.city.id;
+            var isFirstCityNeightbor  = city2.id === node.city.id;
+
+            if (!isSecondCityNeightbor && !isFirstCityNeightbor) return;
+
+            var neightbor = new Node(
+                isFirstCityNeightbor ? city1 : city2, 
+                node, 
+                edge.distance
+            );
+
+            if ( isCityVisitedById.get(neightbor.city.id) ) return;
+
+            nonVisitedNeightbors.push(neightbor);
         });
-        return neightborsList;
+        return nonVisitedNeightbors;
     }
 
-
-    
 }

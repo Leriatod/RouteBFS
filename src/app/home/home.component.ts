@@ -1,11 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
-import { debounceTime, distinctUntilChanged, filter, map } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, map } from 'rxjs/operators';
 
 import { City } from '../models/city';
-import { Edge } from '../models/edge';
 import { Graph } from '../models/graph';
-
+import { Path } from '../models/path';
 import { CityService } from './../city.service';
 
 
@@ -17,10 +16,11 @@ import { CityService } from './../city.service';
 })
 export class HomeComponent implements OnInit {
   cities: City[];
-  graph: Graph;
-
   startCity: City;
   endCity: City;
+  
+  graph: Graph;
+  optimalCitiesPath: Path = { totalDistance: 0, cities: [] };
 
   constructor(private _cityService: CityService) { }
 
@@ -30,11 +30,11 @@ export class HomeComponent implements OnInit {
     var edges = await this._cityService.getEdges();
     this.graph = new Graph(edges);
 
-    //console.log(this.cities);
-    //console.log(edges);
-
   }
 
+  find() {
+    this.optimalCitiesPath = this.graph.bestFirstSearch(this.startCity, this.endCity);
+  }
 
   formatter = (city: City) => city.name;
 
@@ -43,8 +43,4 @@ export class HomeComponent implements OnInit {
     distinctUntilChanged(),
     map(term => this.cities.filter(city => new RegExp(term, 'mi').test(city.name)).slice(0, 10))
   )
-
-  find() {
-    this.graph.bestFirstSearch(this.startCity, this.endCity);
-  }
 }
